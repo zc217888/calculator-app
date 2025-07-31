@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Calculator from './components/Calculator'
 import Header from './components/Header'
 import HistoryPanel from './components/HistoryPanel'
-import { CalculationHistory } from './types/calculator'
 import { useHistory } from './hooks/useHistory'
 
 function App() {

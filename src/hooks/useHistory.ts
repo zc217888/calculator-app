@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import { CalculationHistory } from '../types/calculator'
-import { historyApi } from '../services/api'
 
 interface UseHistoryReturn {
   history: CalculationHistory[]
@@ -46,34 +45,11 @@ export const useHistory = (): UseHistoryReturn => {
     }
   }, [])
 
-  // 从服务器加载历史记录
+  // 从服务器加载历史记录（简化版本）
   const loadServerHistory = useCallback(async () => {
-    if (!syncWithServer) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const response = await historyApi.getHistory(50, 0)
-      
-      if (response.success && response.data) {
-        const serverHistory = response.data.map((item: any) => ({
-          ...item,
-          timestamp: new Date(item.timestamp)
-        }))
-        
-        // 合并本地和服务器历史记录，去重
-        const mergedHistory = mergeHistories(history, serverHistory)
-        setHistory(mergedHistory)
-        saveLocalHistory(mergedHistory)
-      }
-    } catch (err: any) {
-      console.error('加载服务器历史记录失败:', err)
-      setError('无法连接到服务器，使用本地历史记录')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [syncWithServer, history, saveLocalHistory])
+    // 本地版本不需要从服务器加载
+    console.log('使用本地历史记录')
+  }, [])
 
   // 合并历史记录并去重
   const mergeHistories = (local: CalculationHistory[], server: CalculationHistory[]): CalculationHistory[] => {
@@ -92,50 +68,20 @@ export const useHistory = (): UseHistoryReturn => {
     const newHistory = [calculation, ...history.slice(0, 99)]
     setHistory(newHistory)
     saveLocalHistory(newHistory)
-
-    // 同步到服务器
-    if (syncWithServer) {
-      try {
-        await historyApi.addHistory(calculation.expression, calculation.result)
-      } catch (err) {
-        console.error('同步到服务器失败:', err)
-        // 不影响本地操作
-      }
-    }
-  }, [history, saveLocalHistory, syncWithServer])
+  }, [history, saveLocalHistory])
 
   // 清除历史记录
   const clearHistory = useCallback(async () => {
     setHistory([])
     saveLocalHistory([])
-
-    // 清除服务器历史记录
-    if (syncWithServer) {
-      try {
-        await historyApi.clearHistory()
-      } catch (err) {
-        console.error('清除服务器历史记录失败:', err)
-        setError('清除服务器历史记录失败')
-      }
-    }
-  }, [saveLocalHistory, syncWithServer])
+  }, [saveLocalHistory])
 
   // 删除单条历史记录
   const deleteHistoryItem = useCallback(async (id: string) => {
     const newHistory = history.filter(item => item.id !== id)
     setHistory(newHistory)
     saveLocalHistory(newHistory)
-
-    // 从服务器删除
-    if (syncWithServer) {
-      try {
-        await historyApi.deleteHistory(id)
-      } catch (err) {
-        console.error('从服务器删除历史记录失败:', err)
-        // 不影响本地操作
-      }
-    }
-  }, [history, saveLocalHistory, syncWithServer])
+  }, [history, saveLocalHistory])
 
   // 加载历史记录
   const loadHistory = useCallback(async () => {

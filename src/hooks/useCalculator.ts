@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { calculatorApi, historyApi } from '../services/api'
+import { evaluate } from 'mathjs'
 import { CalculationHistory } from '../types/calculator'
 
 interface UseCalculatorReturn {
@@ -29,17 +29,11 @@ export const useCalculator = (): UseCalculatorReturn => {
     clearError()
 
     try {
-      const response = await calculatorApi.calculate(expression)
-      
-      if (response.success && response.data) {
-        return response.data.result
-      } else {
-        setError(response.error || '计算失败')
-        return null
-      }
+      const result = evaluate(expression)
+      return String(result)
     } catch (err: any) {
       console.error('计算错误:', err)
-      setError(err.message || '网络错误，使用本地计算')
+      setError(err.message || '计算表达式无效')
       return null
     } finally {
       setIsLoading(false)
@@ -51,51 +45,30 @@ export const useCalculator = (): UseCalculatorReturn => {
     if (!expression.trim()) return false
 
     try {
-      const response = await calculatorApi.validate(expression)
-      return response.data?.valid || false
+      evaluate(expression)
+      return true
     } catch (err) {
       console.error('验证错误:', err)
       return false
     }
   }, [])
 
-  // 同步历史记录到服务器
+  // 同步历史记录到服务器（简化版本）
   const syncHistoryToServer = useCallback(async (history: CalculationHistory): Promise<void> => {
-    try {
-      await historyApi.addHistory(history.expression, history.result)
-    } catch (err: any) {
-      console.error('同步历史记录失败:', err)
-      // 不抛出错误，允许本地历史记录继续工作
-    }
+    // 本地版本不需要同步到服务器
+    console.log('历史记录已保存到本地:', history)
   }, [])
 
-  // 从服务器加载历史记录
+  // 从服务器加载历史记录（简化版本）
   const loadHistoryFromServer = useCallback(async (): Promise<CalculationHistory[]> => {
-    try {
-      const response = await historyApi.getHistory(50, 0)
-      
-      if (response.success && response.data) {
-        return response.data.map((item: any) => ({
-          ...item,
-          timestamp: new Date(item.timestamp)
-        }))
-      }
-      
-      return []
-    } catch (err: any) {
-      console.error('加载历史记录失败:', err)
-      return []
-    }
+    // 本地版本返回空数组，由本地存储管理
+    return []
   }, [])
 
-  // 清除服务器历史记录
+  // 清除服务器历史记录（简化版本）
   const clearServerHistory = useCallback(async (): Promise<void> => {
-    try {
-      await historyApi.clearHistory()
-    } catch (err: any) {
-      console.error('清除服务器历史记录失败:', err)
-      setError('清除服务器历史记录失败')
-    }
+    // 本地版本不需要清除服务器历史记录
+    console.log('服务器历史记录清除（本地版本）')
   }, [])
 
   return {

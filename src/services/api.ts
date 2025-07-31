@@ -1,7 +1,5 @@
-// API基础配置
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api' 
-  : 'http://localhost:3001/api'
+// API基础配置 - 现在只使用Vercel API路由
+const API_BASE_URL = '/api'
 
 // API响应接口
 interface ApiResponse<T = any> {

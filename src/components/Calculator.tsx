@@ -19,8 +19,6 @@ const Calculator: React.FC<CalculatorProps> = ({
   })
 
   const { 
-    isLoading, 
-    error: apiError, 
     calculateExpression: calculateWithApi,
     syncHistoryToServer 
   } = useCalculator()
