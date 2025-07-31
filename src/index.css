@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+  
+  html {
+    @apply h-full;
+  }
+  
+  body {
+    @apply h-full m-0 font-sans antialiased;
+    @apply bg-gradient-to-br from-slate-50 to-blue-50;
+  }
+  
+  #root {
+    @apply h-full;
+  }
+}
+
+@layer components {
+  .calculator-display {
+    @apply bg-calculator-display text-white font-mono text-right;
+    @apply px-6 py-4 rounded-lg shadow-inner;
+    @apply border border-slate-700;
+  }
+  
+  .calculator-button {
+    @apply rounded-lg font-medium transition-all duration-150;
+    @apply shadow-button hover:shadow-lg active:scale-95;
+    @apply border border-slate-200 hover:border-slate-300;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+  }
+  
+  .button-number {
+    @apply calculator-button bg-calculator-button text-slate-800;
+    @apply hover:bg-slate-100 active:bg-slate-200;
+  }
+  
+  .button-operator {
+    @apply calculator-button bg-calculator-operator text-white;
+    @apply hover:bg-blue-600 active:bg-blue-700;
+  }
+  
+  .button-special {
+    @apply calculator-button bg-calculator-special text-white;
+    @apply hover:bg-amber-600 active:bg-amber-700;
+  }
+  
+  .button-clear {
+    @apply calculator-button bg-red-500 text-white;
+    @apply hover:bg-red-600 active:bg-red-700;
+  }
+  
+  .history-panel {
+    @apply bg-white rounded-lg shadow-calculator border border-slate-200;
+    @apply transition-all duration-300 ease-in-out;
+  }
+}
+
+@layer utilities {
+  .text-display {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+  
+  .text-expression {
+    @apply text-sm md:text-base text-slate-400;
+  }
+}
