@@ -78,17 +78,17 @@ const apiClient = new ApiClient(API_BASE_URL)
 export const calculatorApi = {
   // 执行计算
   calculate: async (expression: string) => {
-    return apiClient.post('/calculator/calculate', { expression })
+    return apiClient.post('/calculate', { expression })
   },
 
   // 验证表达式
   validate: async (expression: string) => {
-    return apiClient.post('/calculator/validate', { expression })
+    return apiClient.post('/validate', { expression })
   },
 
   // 获取支持的函数列表
   getFunctions: async () => {
-    return apiClient.get('/calculator/functions')
+    return apiClient.get('/functions')
   },
 }
 
