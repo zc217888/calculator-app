@@ -58,7 +58,6 @@ function App() {
             <Calculator 
               isScientificMode={isScientificMode}
               onAddToHistory={addToHistory}
-              history={history}
             />
           </div>
           
