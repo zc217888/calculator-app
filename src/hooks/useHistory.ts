@@ -15,8 +15,6 @@ interface UseHistoryReturn {
 
 export const useHistory = (): UseHistoryReturn => {
   const [history, setHistory] = useState<CalculationHistory[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [syncWithServer, setSyncWithServer] = useState(true)
 
   // 从本地存储加载历史记录
@@ -51,17 +49,6 @@ export const useHistory = (): UseHistoryReturn => {
     console.log('使用本地历史记录')
   }, [])
 
-  // 合并历史记录并去重
-  const mergeHistories = (local: CalculationHistory[], server: CalculationHistory[]): CalculationHistory[] => {
-    const combined = [...local, ...server]
-    const unique = combined.filter((item, index, arr) => 
-      arr.findIndex(other => other.id === item.id) === index
-    )
-    
-    return unique
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 100) // 限制最多100条记录
-  }
 
   // 添加历史记录
   const addToHistory = useCallback(async (calculation: CalculationHistory) => {
@@ -105,8 +92,8 @@ export const useHistory = (): UseHistoryReturn => {
 
   return {
     history,
-    isLoading,
-    error,
+    isLoading: false,
+    error: null,
     addToHistory,
     clearHistory,
     loadHistory,

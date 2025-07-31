@@ -6,8 +6,7 @@ import { useCalculator } from '../hooks/useCalculator'
 
 const Calculator: React.FC<CalculatorProps> = ({
   isScientificMode,
-  onAddToHistory,
-  history
+  onAddToHistory
 }) => {
   const [state, setState] = useState<CalculatorState>({
     display: '0',
