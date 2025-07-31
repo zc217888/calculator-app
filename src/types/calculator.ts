@@ -33,7 +33,6 @@ export interface CalculatorButton {
 export interface CalculatorProps {
   isScientificMode: boolean
   onAddToHistory: (calculation: CalculationHistory) => void
-  history: CalculationHistory[]
 }
 
 // 头部组件属性接口
