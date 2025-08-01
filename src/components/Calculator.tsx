@@ -187,13 +187,13 @@ const Calculator: React.FC<CalculatorProps> = ({
                 result = Math.sqrt(currentValue)
                 break
               case 'sin':
-                result = Math.sin(currentValue * Math.PI / 180)
+                result = Math.sin(currentValue)  // 直接使用弧度制
                 break
               case 'cos':
-                result = Math.cos(currentValue * Math.PI / 180)
+                result = Math.cos(currentValue)  // 直接使用弧度制
                 break
               case 'tan':
-                result = Math.tan(currentValue * Math.PI / 180)
+                result = Math.tan(currentValue)  // 直接使用弧度制
                 break
               case 'ln':
                 result = Math.log(currentValue)
