@@ -111,118 +111,155 @@ const Calculator: React.FC<CalculatorProps> = ({
           break
 
         case 'equals':
-          if (newState.expression) {
-            try {
-              const fullExpression = newState.expression + newState.display
+          try {
+            // 获取要计算的表达式
+            let expressionToCalculate: string
+            
+            if (newState.expression) {
+              // 如果有表达式（如 "5 + "），则拼接当前显示值
+              expressionToCalculate = newState.expression + newState.display
+            } else {
+              // 如果没有表达式，直接使用当前显示值（如函数表达式 "sin(30)"）
+              expressionToCalculate = newState.display
+            }
+            
+            // 检查是否需要自动补全右括号
+            const openParens = (expressionToCalculate.match(/\(/g) || []).length
+            const closeParens = (expressionToCalculate.match(/\)/g) || []).length
+            const missingParens = openParens - closeParens
+            
+            if (missingParens > 0) {
+              expressionToCalculate += ')'.repeat(missingParens)
+            }
+            
+            // 尝试使用API计算，如果失败则使用本地计算
+            const performCalculation = async () => {
+              let result: string
+              let calculationError = false
               
-              // 尝试使用API计算，如果失败则使用本地计算
-              const performCalculation = async () => {
-                let result: string
-                let calculationError = false
-                
-                try {
-                  // 优先使用API计算
-                  const apiResult = await calculateWithApi(fullExpression)
-                  if (apiResult !== null) {
-                    result = apiResult
-                  } else {
-                    // API失败，使用本地计算
-                    const localResult = evaluate(fullExpression)
-                    result = String(localResult)
-                  }
-                } catch (error) {
-                  // 本地计算也失败
-                  calculationError = true
-                  result = '错误'
+              try {
+                // 优先使用API计算
+                const apiResult = await calculateWithApi(expressionToCalculate)
+                if (apiResult !== null) {
+                  result = apiResult
+                } else {
+                  // API失败，使用本地计算
+                  const localResult = evaluate(expressionToCalculate)
+                  result = String(localResult)
                 }
-                
-                if (!calculationError) {
-                  // 添加到历史记录
-                  const historyItem: CalculationHistory = {
-                    id: Date.now().toString(),
-                    expression: fullExpression,
-                    result: result,
-                    timestamp: new Date()
-                  }
-                  
-                  onAddToHistory(historyItem)
-                  
-                  // 同步到服务器
-                  try {
-                    await syncHistoryToServer(historyItem)
-                  } catch (error) {
-                    console.warn('同步历史记录到服务器失败:', error)
-                  }
-                }
-                
-                setState(prev => ({
-                  ...prev,
-                  display: result,
-                  expression: '',
-                  waitingForNewValue: true,
-                  isError: calculationError
-                }))
+              } catch (error) {
+                // 本地计算也失败
+                calculationError = true
+                result = '错误'
+                console.error('计算错误:', error)
               }
               
-              performCalculation()
-              return newState // 返回当前状态，异步更新会在performCalculation中处理
+              if (!calculationError) {
+                // 添加到历史记录
+                const historyItem: CalculationHistory = {
+                  id: Date.now().toString(),
+                  expression: expressionToCalculate,
+                  result: result,
+                  timestamp: new Date()
+                }
+                
+                onAddToHistory(historyItem)
+                
+                // 同步到服务器
+                try {
+                  await syncHistoryToServer(historyItem)
+                } catch (error) {
+                  console.warn('同步历史记录到服务器失败:', error)
+                }
+              }
               
-            } catch (error) {
-              newState.isError = true
-              newState.display = '错误'
+              setState(prev => ({
+                ...prev,
+                display: result,
+                expression: '',
+                waitingForNewValue: true,
+                isError: calculationError
+              }))
             }
+            
+            performCalculation()
+            return newState // 返回当前状态，异步更新会在performCalculation中处理
+            
+          } catch (error) {
+            newState.isError = true
+            newState.display = '错误'
+            console.error('Equals处理错误:', error)
           }
           break
 
         case 'special':
-          try {
-            let result: number
-            const currentValue = parseFloat(newState.display)
-            
-            switch (value) {
-              case 'negate':
-                result = -currentValue
-                break
-              case 'sqrt':
-                result = Math.sqrt(currentValue)
-                break
-              case 'sin':
-                result = Math.sin(currentValue)  // 直接使用弧度制
-                break
-              case 'cos':
-                result = Math.cos(currentValue)  // 直接使用弧度制
-                break
-              case 'tan':
-                result = Math.tan(currentValue)  // 直接使用弧度制
-                break
-              case 'ln':
-                result = Math.log(currentValue)
-                break
-              case 'log10':
-                result = Math.log10(currentValue)
-                break
-              case '^2':
-                result = Math.pow(currentValue, 2)
-                break
-              case 'pi':
-                result = Math.PI
-                break
-              case 'e':
-                result = Math.E
-                break
-              case '(':
-              case ')':
-                newState.display = newState.display + value
-                return newState
-              default:
-                return newState
-            }
-            
-            newState.display = String(result)
-            newState.waitingForNewValue = true
-          } catch (error) {
-            newState.isError = true
-            newState.display = '错误'
+          switch (value) {
+            case 'negate':
+              try {
+                const currentValue = parseFloat(newState.display)
+                const result = -currentValue
+                newState.display = String(result)
+                newState.waitingForNewValue = true
+              } catch (error) {
+                newState.isError = true
+                newState.display = '错误'
+              }
+              break
+              
+            case '^2':
+              try {
+                const currentValue = parseFloat(newState.display)
+                const result = Math.pow(currentValue, 2)
+                newState.display = String(result)
+                newState.waitingForNewValue = true
+              } catch (error) {
+                newState.isError = true
+                newState.display = '错误'
+              }
+              break
+              
+            case 'pi':
+              newState.display = String(Math.PI)
+              newState.waitingForNewValue = true
+              break
+              
+            case 'e':
+              newState.display = String(Math.E)
+              newState.waitingForNewValue = true
+              break
+              
+            case 'sin':
+            case 'cos':
+            case 'tan':
+            case 'ln':
+            case 'log10':
+            case 'sqrt':
+              // 函数式输入：显示函数名和左括号
+              if (newState.waitingForNewValue || newState.display === '0') {
+                newState.display = value + '('
+              } else {
+                newState.display = newState.display + value + '('
+              }
+              newState.waitingForNewValue = false
+              break
+              
+            case '(':
+              if (newState.waitingForNewValue || newState.display === '0') {
+                newState.display = '('
+              } else {
+                newState.display = newState.display + '('
+              }
+              newState.waitingForNewValue = false
+              break
+              
+            case ')':
+              if (newState.display !== '0' && !newState.waitingForNewValue) {
+                newState.display = newState.display + ')'
+              }
+              break
+              
+            default:
+              return newState
           }
           break
       }
