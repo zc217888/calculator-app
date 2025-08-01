@@ -219,13 +219,21 @@ const Calculator: React.FC<CalculatorProps> = ({
               break
               
             case 'pi':
-              newState.display = String(Math.PI)
-              newState.waitingForNewValue = true
+              if (newState.waitingForNewValue || newState.display === '0') {
+                newState.display = 'pi'
+              } else {
+                newState.display = newState.display + 'pi'
+              }
+              newState.waitingForNewValue = false
               break
               
             case 'e':
-              newState.display = String(Math.E)
-              newState.waitingForNewValue = true
+              if (newState.waitingForNewValue || newState.display === '0') {
+                newState.display = 'e'
+              } else {
+                newState.display = newState.display + 'e'
+              }
+              newState.waitingForNewValue = false
               break
               
             case 'sin':
