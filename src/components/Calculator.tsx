@@ -22,6 +22,26 @@ const Calculator: React.FC<CalculatorProps> = ({
     syncHistoryToServer 
   } = useCalculator()
 
+  // 格式化计算结果
+  const formatResult = (result: number): string => {
+    if (isNaN(result)) return '错误'
+    if (!isFinite(result)) return result > 0 ? '∞' : '-∞'
+    
+    // 处理非常接近0的数值（如 sin(π) 的结果）
+    if (Math.abs(result) < 1e-10) return '0'
+    
+    // 处理非常大的数值
+    if (Math.abs(result) > 1e15) return result.toExponential(6)
+    
+    // 处理小数位数过多的情况
+    const str = result.toString()
+    if (str.includes('.') && str.split('.')[1].length > 10) {
+      return parseFloat(result.toPrecision(12)).toString()
+    }
+    
+    return str
+  }
+
   // 基础按钮配置
   const basicButtons = [
     { label: 'C', value: 'clear', type: 'clear' as const, className: 'button-clear' },
@@ -98,7 +118,7 @@ const Calculator: React.FC<CalculatorProps> = ({
           if (newState.expression && !newState.waitingForNewValue) {
             try {
               const result = evaluate(newState.expression + newState.display)
-              newState.display = String(result)
+              newState.display = formatResult(result)
             } catch (error) {
               newState.isError = true
               newState.display = '错误'
@@ -137,22 +157,24 @@ const Calculator: React.FC<CalculatorProps> = ({
               let result: string
               let calculationError = false
               
-              try {
-                // 优先使用API计算
-                const apiResult = await calculateWithApi(expressionToCalculate)
-                if (apiResult !== null) {
-                  result = apiResult
-                } else {
-                  // API失败，使用本地计算
-                  const localResult = evaluate(expressionToCalculate)
-                  result = String(localResult)
+                try {
+                  // 优先使用API计算
+                  const apiResult = await calculateWithApi(expressionToCalculate)
+                  if (apiResult !== null) {
+                    // API返回的是字符串，需要转换为数字再格式化
+                    const numResult = parseFloat(apiResult)
+                    result = formatResult(numResult)
+                  } else {
+                    // API失败，使用本地计算
+                    const localResult = evaluate(expressionToCalculate)
+                    result = formatResult(localResult)
+                  }
+                } catch (error) {
+                  // 本地计算也失败
+                  calculationError = true
+                  result = '错误'
+                  console.error('计算错误:', error)
                 }
-              } catch (error) {
-                // 本地计算也失败
-                calculationError = true
-                result = '错误'
-                console.error('计算错误:', error)
-              }
               
               if (!calculationError) {
                 // 添加到历史记录
@@ -198,7 +220,7 @@ const Calculator: React.FC<CalculatorProps> = ({
               try {
                 const currentValue = parseFloat(newState.display)
                 const result = -currentValue
-                newState.display = String(result)
+                newState.display = formatResult(result)
                 newState.waitingForNewValue = true
               } catch (error) {
                 newState.isError = true
@@ -210,7 +232,7 @@ const Calculator: React.FC<CalculatorProps> = ({
               try {
                 const currentValue = parseFloat(newState.display)
                 const result = Math.pow(currentValue, 2)
-                newState.display = String(result)
+                newState.display = formatResult(result)
                 newState.waitingForNewValue = true
               } catch (error) {
                 newState.isError = true
